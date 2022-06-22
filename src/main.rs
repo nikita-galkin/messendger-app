@@ -3,7 +3,7 @@ use keyboard::create_keyboard;
 use gtk::prelude::*;
 use gtk::{self, Application, ApplicationWindow, 
     Button, Label, Entry, 
-    Orientation, Widget, glib, Align
+    Orientation, Widget, glib, WindowType
 };
 
 const APP_ID: &str = "org.gtk-rs.GObjectMemoryManagement4";
@@ -65,12 +65,12 @@ fn build_ui(app: &Application) {
     let vert_container = gtk::Box::builder()
         .orientation(Orientation::Vertical)
         .build();
-    vert_container.append(&login);
-    vert_container.append(&login_input);
-    vert_container.append(&password);
-    vert_container.append(&password_input);
-    vert_container.append(&enter);
-    vert_container.append(&keyboard);
+    vert_container.add(&login);
+    vert_container.add(&login_input);
+    vert_container.add(&password);
+    vert_container.add(&password_input);
+    vert_container.add(&enter);
+    vert_container.add(&keyboard);
     // ANCHOR_END: box_append
 
     // Create main window
@@ -86,25 +86,24 @@ fn build_ui(app: &Application) {
 
 fn create_main_window(application: &Application, child: &impl IsA<Widget>) -> ApplicationWindow {
     let window = ApplicationWindow::new(application);
-    window.set_title(Some("QPager"));
+    window.set_title("QPager");
     window.fullscreen();
     //window.set_default_size(800, 480);
     window.set_child(Some(child));
-    window.present();
+    window.show_all();
     window
 }
 
 fn create_chat_window(application: &Application) {
-    let chat = gtk::Window::new();
+    let chat = gtk::Window::new(WindowType::Toplevel);
     application.add_window(&chat);
-    chat.set_title(Some("QPager"));
+    chat.set_title("QPager");
     chat.fullscreen();
     //chat.set_default_size(800, 480);
     let dialog_place = gtk::ScrolledWindow::builder()
         .height_request(240)
         .width_request(400)
         .can_focus(false)
-        .can_target(false)
         .build();
     let message_input = Entry::builder()
         .placeholder_text("Type your message")
@@ -119,10 +118,10 @@ fn create_chat_window(application: &Application) {
         .width_request(400)
         .build();
     let keyb = create_keyboard();
-    vert_container.append(&dialog_place);
-    vert_container.append(&message_input);
-    vert_container.append(&keyb);
+    vert_container.add(&dialog_place);
+    vert_container.add(&message_input);
+    vert_container.add(&keyb);
     
     chat.set_child(Some(&vert_container));
-    chat.present();
+    chat.show_all();
 }
