@@ -9,12 +9,15 @@ fn keyboard_buttons(str: &str) -> Button
         .margin_bottom(5)
         .margin_start(5)
         .margin_end(5)
+        .can_focus(false)
         .build();
 }
 
-pub fn create_keyboard() -> Grid
+pub fn create_keyboard() -> (Grid, Vec<Button>)
 {
+    let mut buttons: Vec<Button> = Vec::new();
     let button_0 = keyboard_buttons("0");
+    buttons.push(button_0.clone());
     let button_1 = keyboard_buttons("1");
     let button_2 = keyboard_buttons("2");
     let button_3 = keyboard_buttons("3");
@@ -127,5 +130,5 @@ pub fn create_keyboard() -> Grid
     grid.attach(&button_dot, 9, 4, 1, 1);
     grid.attach(&button_coma, 10, 4, 1, 1);
 
-    grid
+    (grid, buttons)
 }

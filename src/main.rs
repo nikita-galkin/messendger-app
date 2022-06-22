@@ -64,15 +64,22 @@ fn build_ui(app: &Application) {
     // Add widgets to `vert_container`
     let vert_container = gtk::Box::builder()
         .orientation(Orientation::Vertical)
+        .width_request(800)
+        .height_request(480)
         .build();
     vert_container.add(&login);
     vert_container.add(&login_input);
     vert_container.add(&password);
     vert_container.add(&password_input);
     vert_container.add(&enter);
-    vert_container.add(&keyboard);
+    vert_container.add(&keyboard.0);
     // ANCHOR_END: box_append
 
+    keyboard.1[0].connect_clicked(move |_| {
+        if login_input.activate() {
+            login_input.set_text("0");
+        };
+    });
     // Create main window
     let main_window = create_main_window(app, &vert_container);
     enter.connect_clicked(
@@ -87,8 +94,9 @@ fn build_ui(app: &Application) {
 fn create_main_window(application: &Application, child: &impl IsA<Widget>) -> ApplicationWindow {
     let window = ApplicationWindow::new(application);
     window.set_title("QPager");
-    window.fullscreen();
-    //window.set_default_size(800, 480);
+    //window.fullscreen();
+    window.set_window_position(gtk::WindowPosition::Center);
+    window.set_default_size(800, 480);
     window.set_child(Some(child));
     window.show_all();
     window
@@ -98,11 +106,17 @@ fn create_chat_window(application: &Application) {
     let chat = gtk::Window::new(WindowType::Toplevel);
     application.add_window(&chat);
     chat.set_title("QPager");
-    chat.fullscreen();
-    //chat.set_default_size(800, 480);
+    chat.set_window_position(gtk::WindowPosition::Center);
+    //chat.fullscreen();
+    chat.set_default_size(800, 480);
+    let chat_place = gtk::ScrolledWindow::builder()
+        .height_request(480)
+        .width_request(200)
+        .can_focus(false)
+        .build();
     let dialog_place = gtk::ScrolledWindow::builder()
-        .height_request(240)
-        .width_request(400)
+        .height_request(300)
+        .width_request(600)
         .can_focus(false)
         .build();
     let message_input = Entry::builder()
@@ -112,16 +126,24 @@ fn create_chat_window(application: &Application) {
         .margin_start(10)
         .margin_end(10)
         .build();
+    let hor_container = gtk::Box::builder()
+        .orientation(Orientation::Horizontal)
+        .height_request(480)
+        .width_request(800)
+        .build();
     let vert_container = gtk::Box::builder()
         .orientation(Orientation::Vertical)
         .height_request(480)
-        .width_request(400)
+        .width_request(600)
         .build();
     let keyb = create_keyboard();
+
     vert_container.add(&dialog_place);
     vert_container.add(&message_input);
-    vert_container.add(&keyb);
+    vert_container.add(&keyb.0);
+    hor_container.add(&chat_place);
+    hor_container.add(&vert_container);
     
-    chat.set_child(Some(&vert_container));
+    chat.set_child(Some(&hor_container));
     chat.show_all();
 }
