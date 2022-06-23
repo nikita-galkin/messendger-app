@@ -1,5 +1,5 @@
 use gtk::prelude::*;
-use gtk::{ Button, Grid, Align };
+use gtk::{ Button, ToggleButton, Grid, Align };
 
 fn keyboard_buttons(str: &str) -> Button
 {

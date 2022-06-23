@@ -3,7 +3,7 @@ use keyboard::create_keyboard;
 use gtk::prelude::*;
 use gtk::{self, Application, ApplicationWindow, 
     Button, Label, Entry, 
-    Orientation, Widget, glib, WindowType
+    Orientation, Widget, glib, WindowType, atk
 };
 
 const APP_ID: &str = "org.gtk-rs.GObjectMemoryManagement4";
@@ -73,21 +73,28 @@ fn build_ui(app: &Application) {
     vert_container.add(&password_input);
     vert_container.add(&enter);
     vert_container.add(&keyboard.0);
+    
     // ANCHOR_END: box_append
-
-    keyboard.1[0].connect_clicked(move |_| {
+    /*keyboard.1[0].connect_clicked(move |_| {
+        let buffer = gtk::EntryBuffer::new(Some(""));
         if login_input.activate() {
-            login_input.set_text("0");
+            let mut str = buffer.text();
+            str.push('0');
+            buffer.set_text(&str);
+            login_input.set_text(&buffer.text());
         };
-    });
+    });*/
+
     // Create main window
-    let main_window = create_main_window(app, &vert_container);
+    let main_window = create_main_window(&app, &vert_container);
+    
+
     enter.connect_clicked(
         glib::clone!(@weak main_window, @weak app => move |_| {
             // When the button is clicked, let's close the main window
             main_window.close();
             create_chat_window(&app);
-    }));    
+    }));
     
 }
 
