@@ -1,8 +1,8 @@
 mod keyboard;
-use gtk::builders::AdjustmentBuilder;
-use gtk::ffi::GtkAdjustmentClass;
+use std::rc::{Rc, self};
+
 use keyboard::create_keyboard;
-use gtk::{prelude::*, Adjustment};
+use gtk::prelude::*;
 use gtk::{self, Application, ApplicationWindow, 
     Button, Label, Entry, 
     Orientation, Widget, glib, WindowType, atk
@@ -79,39 +79,89 @@ fn build_ui(app: &Application) {
     vert_container.add(&keyboard.0);
     // ANCHOR_END: box_append
 
-    for i in 0..10 {
-        keyboard.1[i].connect_clicked(glib::clone!(@weak login_input, @weak password_input => move |_| {
+    for (i, btn) in keyboard.1.into_iter() {
+        btn.connect_clicked(glib::clone!(@weak login_input, @weak password_input => move |_| {
             if login_input.is_focus() {
                 let str = login_input.text();
                 let mut string: String = str.into();
-                string.push_str(&i.to_string());
+                if keyboard.2.get("caps").unwrap().is_active() {
+                    string.push_str(&i.to_string().to_uppercase());
+                }
+                else if keyboard.2.get("shift").unwrap().is_active() {
+                    string.push_str(&i.to_string().to_uppercase());
+                    keyboard.2.get("shift").unwrap().activate();
+                }
+                else {
+                    string.push_str(&i.to_string());
+                }
                 login_input.set_text(&string);
             }
             else if password_input.is_focus() {
                 let str = password_input.text();
                 let mut string: String = str.into();
-                string.push_str(&i.to_string());
+                if keyboard.2.get("caps").unwrap().is_active() {
+                    string.push_str(&i.to_string().to_uppercase());
+                }
+                else if keyboard.2.get("shift").unwrap().is_active() {
+                    string.push_str(&i.to_string().to_uppercase());
+                    keyboard.2.get("shift").unwrap().activate();
+                }
+                else {
+                    string.push_str(&i.to_string());
+                }
                 password_input.set_text(&string);
-            }
-            
+            } 
         }));
     } 
-     keyboard.1[10].connect_clicked(glib::clone!(@weak login_input, @weak password_input => move |_| {
-            if login_input.is_focus() {
-                let str = login_input.text();
-                let mut string: String = str.into();
-                string.pop();
-                login_input.set_text(&string);
-            }
-            else if password_input.is_focus() {
-                let str = password_input.text();
-                let mut string: String = str.into();
-                string.pop();
-                password_input.set_text(&string);
-            }
+    /*keyboard.1[10].connect_clicked(glib::clone!(@weak login_input, @weak password_input => move |_| {
+        if login_input.is_focus() {
+            let str = login_input.text();
+            let mut string: String = str.into();
+            string.pop();
+            login_input.set_text(&string);
+        }
+        else if password_input.is_focus() {
+            let str = password_input.text();
+            let mut string: String = str.into();
+            string.pop();
+            password_input.set_text(&string);
+        }
+    }));*/
+
+    /*keyboard.1[11].connect_clicked(glib::clone!(@weak login_input, @weak password_input => move |_| {
+        if login_input.is_focus() {
+            let str = login_input.text();
+            let mut string: String = str.into();
             
-        }));
-    
+            if keyboard.2[0].is_active() {
+                string.push('Q');
+            }
+            else if keyboard.2[1].is_active() {
+                string.push('Q');
+                keyboard.2[1].activate();
+            }
+            else {
+                string.push('q');
+            }
+            login_input.set_text(&string);
+            
+        }
+        else if password_input.is_focus() {
+            let str = password_input.text();
+            let mut string: String = str.into();
+            if keyboard.2[0].is_active() {
+                string.push('Q');
+            }
+            else if keyboard.2[1].is_active() {
+                string.push('Q');
+                keyboard.2[1].activate();
+            }
+            else {
+                string.push('q');
+            }
+            password_input.set_text(&string);
+        }
+    }));*/
 
     
     // Create main window

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use gtk::prelude::*;
 use gtk::{ Button, ToggleButton, Grid, Align };
 
@@ -12,32 +14,46 @@ fn keyboard_buttons(str: &str) -> Button
         .can_focus(false)
         .build();
 }
-
-pub fn create_keyboard() -> (Grid, Vec<Button>)
+fn special_keyboard_buttons(str: &str) -> ToggleButton
 {
-    let mut buttons: Vec<Button> = Vec::new();
+    return ToggleButton::builder()
+        .label(str)
+        .margin_top(5)
+        .margin_bottom(5)
+        .margin_start(5)
+        .margin_end(5)
+        .can_focus(false)
+        .build();
+}
+
+pub fn create_keyboard() -> (Grid, HashMap<char, Button>, HashMap<&'static str, ToggleButton>)
+{
+    let mut buttons: HashMap<char, Button> = HashMap::new();
+    let mut special_buttons: HashMap<&'static str, ToggleButton> = HashMap::new();
     let button_0 = keyboard_buttons("0");
-    buttons.push(button_0.clone());
+    buttons.insert('0', button_0.clone());
     let button_1 = keyboard_buttons("1");
-    buttons.push(button_1.clone());
+    buttons.insert('1', button_1.clone());
     let button_2 = keyboard_buttons("2");
-    buttons.push(button_2.clone());
+    buttons.insert('2', button_2.clone());
     let button_3 = keyboard_buttons("3");
-    buttons.push(button_3.clone());
+    buttons.insert('3', button_3.clone());
     let button_4 = keyboard_buttons("4");
-    buttons.push(button_4.clone());
+    buttons.insert('4', button_4.clone());
     let button_5 = keyboard_buttons("5");
-    buttons.push(button_5.clone());
+    buttons.insert('5', button_5.clone());
     let button_6 = keyboard_buttons("6");
-    buttons.push(button_6.clone());
+    buttons.insert('6', button_6.clone());
     let button_7 = keyboard_buttons("7");
-    buttons.push(button_7.clone());
+    buttons.insert('7', button_7.clone());
     let button_8 = keyboard_buttons("8");
-    buttons.push(button_8.clone());
+    buttons.insert('8', button_8.clone());
     let button_9 = keyboard_buttons("9");
-    buttons.push(button_9.clone());
+    buttons.insert('9', button_9.clone());
+    
 
     let button_Q = keyboard_buttons("Q");
+    buttons.insert('q', button_Q.clone());
     let button_W = keyboard_buttons("W");
     let button_E = keyboard_buttons("E");
     let button_R = keyboard_buttons("R");
@@ -63,19 +79,24 @@ pub fn create_keyboard() -> (Grid, Vec<Button>)
     let button_B = keyboard_buttons("B");
     let button_N = keyboard_buttons("N");
     let button_M = keyboard_buttons("M");
-
-    let button_del = keyboard_buttons("del");
-    buttons.push(button_del.clone());
-    let button_caps = keyboard_buttons("caps");
-    let button_shift = keyboard_buttons("shift");
     let button_excl = keyboard_buttons("!");
     let button_quest = keyboard_buttons("?");
     let button_coma = keyboard_buttons(",");
     let button_dot = keyboard_buttons(".");
     let button_space = keyboard_buttons("space");
-    let button_alt = keyboard_buttons("alt");
-    let button_ctrl = keyboard_buttons("ctrl");
     let button_enter = keyboard_buttons("enter");
+
+    let button_del = keyboard_buttons("del");
+
+    let button_caps = special_keyboard_buttons("caps");
+    special_buttons.insert("caps", button_caps.clone());
+    let button_shift = special_keyboard_buttons("shift");
+    special_buttons.insert("shift", button_shift.clone());
+    let button_alt = special_keyboard_buttons("alt");
+    special_buttons.insert("alt", button_alt.clone());
+    let button_ctrl = special_keyboard_buttons("ctrl");
+    special_buttons.insert("ctrl", button_ctrl.clone());
+    
 
     let grid = Grid::builder()
         .margin_start(6)
@@ -140,5 +161,5 @@ pub fn create_keyboard() -> (Grid, Vec<Button>)
     grid.attach(&button_dot, 9, 4, 1, 1);
     grid.attach(&button_coma, 10, 4, 1, 1);
 
-    (grid, buttons)
+    (grid, buttons, special_buttons)
 }
