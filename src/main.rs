@@ -1,6 +1,8 @@
 mod keyboard;
+use gtk::builders::AdjustmentBuilder;
+use gtk::ffi::GtkAdjustmentClass;
 use keyboard::create_keyboard;
-use gtk::prelude::*;
+use gtk::{prelude::*, Adjustment};
 use gtk::{self, Application, ApplicationWindow, 
     Button, Label, Entry, 
     Orientation, Widget, glib, WindowType, atk
@@ -30,6 +32,7 @@ fn build_ui(app: &Application) {
     let login_input = Entry::builder()
         .placeholder_text("Type your login")
         .margin_top(10)
+        .can_focus(true)
         .margin_bottom(10)
         .margin_start(10)
         .margin_end(10)
@@ -44,6 +47,7 @@ fn build_ui(app: &Application) {
         .build();
     let password_input = Entry::builder()
         .placeholder_text("Type your password")
+        .can_focus(true)
         .margin_top(10)
         .margin_bottom(10)
         .margin_start(10)
@@ -59,7 +63,7 @@ fn build_ui(app: &Application) {
         .build();
     // Create keyboard
     let keyboard = create_keyboard();
-
+    
     // ANCHOR: box_append
     // Add widgets to `vert_container`
     let vert_container = gtk::Box::builder()
@@ -73,18 +77,43 @@ fn build_ui(app: &Application) {
     vert_container.add(&password_input);
     vert_container.add(&enter);
     vert_container.add(&keyboard.0);
-    
     // ANCHOR_END: box_append
-    /*keyboard.1[0].connect_clicked(move |_| {
-        let buffer = gtk::EntryBuffer::new(Some(""));
-        if login_input.activate() {
-            let mut str = buffer.text();
-            str.push('0');
-            buffer.set_text(&str);
-            login_input.set_text(&buffer.text());
-        };
-    });*/
 
+    for i in 0..10 {
+        keyboard.1[i].connect_clicked(glib::clone!(@weak login_input, @weak password_input => move |_| {
+            if login_input.is_focus() {
+                let str = login_input.text();
+                let mut string: String = str.into();
+                string.push_str(&i.to_string());
+                login_input.set_text(&string);
+            }
+            else if password_input.is_focus() {
+                let str = password_input.text();
+                let mut string: String = str.into();
+                string.push_str(&i.to_string());
+                password_input.set_text(&string);
+            }
+            
+        }));
+    } 
+     keyboard.1[10].connect_clicked(glib::clone!(@weak login_input, @weak password_input => move |_| {
+            if login_input.is_focus() {
+                let str = login_input.text();
+                let mut string: String = str.into();
+                string.pop();
+                login_input.set_text(&string);
+            }
+            else if password_input.is_focus() {
+                let str = password_input.text();
+                let mut string: String = str.into();
+                string.pop();
+                password_input.set_text(&string);
+            }
+            
+        }));
+    
+
+    
     // Create main window
     let main_window = create_main_window(&app, &vert_container);
     

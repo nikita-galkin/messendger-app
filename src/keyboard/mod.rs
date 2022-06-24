@@ -19,14 +19,23 @@ pub fn create_keyboard() -> (Grid, Vec<Button>)
     let button_0 = keyboard_buttons("0");
     buttons.push(button_0.clone());
     let button_1 = keyboard_buttons("1");
+    buttons.push(button_1.clone());
     let button_2 = keyboard_buttons("2");
+    buttons.push(button_2.clone());
     let button_3 = keyboard_buttons("3");
+    buttons.push(button_3.clone());
     let button_4 = keyboard_buttons("4");
+    buttons.push(button_4.clone());
     let button_5 = keyboard_buttons("5");
+    buttons.push(button_5.clone());
     let button_6 = keyboard_buttons("6");
+    buttons.push(button_6.clone());
     let button_7 = keyboard_buttons("7");
+    buttons.push(button_7.clone());
     let button_8 = keyboard_buttons("8");
+    buttons.push(button_8.clone());
     let button_9 = keyboard_buttons("9");
+    buttons.push(button_9.clone());
 
     let button_Q = keyboard_buttons("Q");
     let button_W = keyboard_buttons("W");
@@ -56,6 +65,7 @@ pub fn create_keyboard() -> (Grid, Vec<Button>)
     let button_M = keyboard_buttons("M");
 
     let button_del = keyboard_buttons("del");
+    buttons.push(button_del.clone());
     let button_caps = keyboard_buttons("caps");
     let button_shift = keyboard_buttons("shift");
     let button_excl = keyboard_buttons("!");
