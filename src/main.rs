@@ -51,6 +51,7 @@ fn build_ui(app: &Application) {
         .margin_bottom(10)
         .margin_start(10)
         .margin_end(10)
+        .visibility(false)
         .build();
     // Create 'enter' button
     let enter = Button::builder()
@@ -80,55 +81,71 @@ fn build_ui(app: &Application) {
     vert_container.add(&keyboard_grid);
     // ANCHOR_END: box_append
 
-    for (i, btn) in keyboard_buttons.clone().into_iter() {
-        btn.connect_clicked(glib::clone!(@strong keyboard_special_buttons, @weak login_input, @weak password_input => move |_| {
-            if login_input.is_focus() {
-                let str = login_input.text();
-                let mut string: String = str.into();
-                if keyboard_special_buttons.get("caps").unwrap().is_active() {
-                    string.push_str(&i.to_string().to_uppercase());
+    for (i, btn) in keyboard_buttons.into_iter() {
+        if i == '<' {
+            btn.connect_clicked(glib::clone!(@strong keyboard_special_buttons, @weak login_input, @weak password_input => move |_| {
+                if login_input.is_focus() {
+                    let str = login_input.text();
+                    let mut string: String = str.into();
+                    string.pop();
+                    login_input.set_text(&string);
+                    login_input.emit_move_cursor(gtk::MovementStep::BufferEnds, 1, false);
                 }
-                else if keyboard_special_buttons.get("shift").unwrap().is_active() {
-                    string.push_str(&i.to_string().to_uppercase());
-                    keyboard_special_buttons.get("shift").unwrap().activate();
+                else if password_input.is_focus() {
+                    let str = password_input.text();
+                    let mut string: String = str.into();
+                    string.pop();
+                    password_input.set_text(&string);
+                    password_input.emit_move_cursor(gtk::MovementStep::BufferEnds, 1, false);
+                } 
+            }));
+        }
+        else if i == '>' {
+            btn.connect_clicked(glib::clone!(@weak login_input, @weak password_input => move |_| {
+                if login_input.is_focus() {
+                    password_input.set_is_focus(true);
                 }
-                else {
-                    string.push_str(&i.to_string());
+            }));
+        }
+        else {
+            btn.connect_clicked(glib::clone!(@strong keyboard_special_buttons, @weak login_input, @weak password_input => move |_| {
+                if login_input.is_focus() {
+                    let str = login_input.text();
+                    let mut string: String = str.into();
+                    if keyboard_special_buttons.get("caps").unwrap().is_active() {
+                        string.push_str(&i.to_string().to_uppercase());
+                    }
+                    else if keyboard_special_buttons.get("shift").unwrap().is_active() {
+                        string.push_str(&i.to_string().to_uppercase());
+                        keyboard_special_buttons.get("shift").unwrap().activate();
+                    }
+                    else {
+                        string.push_str(&i.to_string());
+                    }
+                    login_input.set_text(&string);
+                    login_input.emit_move_cursor(gtk::MovementStep::BufferEnds, 1, false);
                 }
-                
-                login_input.set_text(&string);
-            }
-            else if password_input.is_focus() {
-                let str = password_input.text();
-                let mut string: String = str.into();
-                if keyboard_special_buttons.get("caps").unwrap().is_active() {
-                    string.push_str(&i.to_string().to_uppercase());
-                }
-                else if keyboard_special_buttons.get("shift").unwrap().is_active() {
-                    string.push_str(&i.to_string().to_uppercase());
-                    keyboard_special_buttons.get("shift").unwrap().activate();
-                }
-                else {
-                    string.push_str(&i.to_string());
-                }
-                password_input.set_text(&string);
-            } 
-        }));
+                else if password_input.is_focus() {
+                    let str = password_input.text();
+                    let mut string: String = str.into();
+                    if keyboard_special_buttons.get("caps").unwrap().is_active() {
+                        string.push_str(&i.to_string().to_uppercase());
+                    }
+                    else if keyboard_special_buttons.get("shift").unwrap().is_active() {
+                        string.push_str(&i.to_string().to_uppercase());
+                        keyboard_special_buttons.get("shift").unwrap().activate();
+                    }
+                    else {
+                        string.push_str(&i.to_string());
+                    }
+                    password_input.set_text(&string);
+                    password_input.emit_move_cursor(gtk::MovementStep::BufferEnds, 1, false);
+                } 
+            }));
+        }
+        
     }
-    keyboard_buttons.get(&'<').unwrap().connect_clicked(glib::clone!(@weak login_input, @weak password_input => move |_| {
-        if login_input.is_focus() {
-            let str = login_input.text();
-            let mut string: String = str.into();
-            string.pop();
-            login_input.set_text(&string);
-        }
-        else if password_input.is_focus() {
-            let str = password_input.text();
-            let mut string: String = str.into();
-            string.pop();
-            password_input.set_text(&string);
-        }
-    }));
+    
     
     
     // Create main window
@@ -138,8 +155,10 @@ fn build_ui(app: &Application) {
     enter.connect_clicked(
         glib::clone!(@weak main_window, @weak app => move |_| {
             // When the button is clicked, let's close the main window
+            println!("Login: {}", login_input.text().to_string());
+            println!("Password: {}", password_input.text().to_string());
             main_window.close();
-            create_chat_window(&app);
+            create_chat_window(&app, login_input.text().to_string());
     }));
     
 }
@@ -155,22 +174,27 @@ fn create_main_window(application: &Application, child: &impl IsA<Widget>) -> Ap
     window
 }
 
-fn create_chat_window(application: &Application) {
+fn create_chat_window(application: &Application, login: String) {
     let chat = gtk::Window::new(WindowType::Toplevel);
     application.add_window(&chat);
     chat.set_title("QPager");
     chat.set_window_position(gtk::WindowPosition::Center);
     //chat.fullscreen();
     chat.set_default_size(800, 480);
+    
+    let chat_box = gtk::ListBox::new();
     let chat_place = gtk::ScrolledWindow::builder()
         .height_request(480)
         .width_request(200)
         .can_focus(false)
+        .child(&chat_box)
         .build();
+    let dialog_box = gtk::ListBox::builder().valign(gtk::Align::End).build();
     let dialog_place = gtk::ScrolledWindow::builder()
         .height_request(300)
         .width_request(600)
         .can_focus(false)
+        .child(&dialog_box)
         .build();
     let message_input = Entry::builder()
         .placeholder_text("Type your message")
@@ -190,13 +214,61 @@ fn create_chat_window(application: &Application) {
         .width_request(600)
         .build();
     let keyb = create_keyboard();
+    let keyboard_grid = keyb.0;
+    let keyboard_buttons = keyb.1;
+    let keyboard_special_buttons = keyb.2;
 
     vert_container.add(&dialog_place);
     vert_container.add(&message_input);
-    vert_container.add(&keyb.0);
+    vert_container.add(&keyboard_grid);
     hor_container.add(&chat_place);
     hor_container.add(&vert_container);
-    
+    for (i, btn) in keyboard_buttons.into_iter() {
+        if i == '<' {
+            btn.connect_clicked(glib::clone!(@strong keyboard_special_buttons, @weak message_input => move |_| {
+                if message_input.is_focus() {
+                    let str = message_input.text();
+                    let mut string: String = str.into();
+                    string.pop();
+                    message_input.set_text(&string);
+                    message_input.emit_move_cursor(gtk::MovementStep::BufferEnds, 1, false);
+                }
+            }));
+        }
+        else if i == '>' {
+            btn.connect_clicked(glib::clone!(@strong login, @weak dialog_box, @weak dialog_place, @weak message_input => move |_| {
+                let label = Label::builder().label(&message_input.text().to_string()).build();
+                let login_label = Label::builder().label(&login).margin_end(5).build();
+                let cont = gtk::Box::builder().orientation(Orientation::Horizontal).halign(gtk::Align::End).build();
+                cont.add(&login_label);
+                cont.add(&label);
+                dialog_box.add(&cont);
+                let len: i32 = message_input.text().len().try_into().unwrap();
+                message_input.delete_text(0, len);
+                dialog_place.show_all();
+            }));
+        }
+        else {
+            btn.connect_clicked(glib::clone!(@strong keyboard_special_buttons, @weak message_input => move |_| {
+                if message_input.is_focus() {
+                    let str = message_input.text();
+                    let mut string: String = str.into();
+                    if keyboard_special_buttons.get("caps").unwrap().is_active() {
+                        string.push_str(&i.to_string().to_uppercase());
+                    }
+                    else if keyboard_special_buttons.get("shift").unwrap().is_active() {
+                        string.push_str(&i.to_string().to_uppercase());
+                        keyboard_special_buttons.get("shift").unwrap().activate();
+                    }
+                    else {
+                        string.push_str(&i.to_string());
+                    }
+                    message_input.set_text(&string);
+                    message_input.emit_move_cursor(gtk::MovementStep::BufferEnds, 1, false);
+                }
+            }));
+        }
+    }
     chat.set_child(Some(&hor_container));
     chat.show_all();
 }

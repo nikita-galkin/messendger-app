@@ -116,8 +116,9 @@ pub fn create_keyboard() -> (Grid, HashMap<char, Button>, HashMap<&'static str, 
     buttons.insert(' ', button_space.clone());
     let button_del = keyboard_buttons("del");
     buttons.insert('<', button_del.clone());
-
     let button_enter = keyboard_buttons("enter");
+    buttons.insert('>', button_enter.clone());
+
     let button_caps = special_keyboard_buttons("caps");
     special_buttons.insert("caps", button_caps.clone());
     let button_shift = special_keyboard_buttons("shift");
