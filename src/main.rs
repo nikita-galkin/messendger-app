@@ -181,7 +181,17 @@ fn create_chat_window(application: &Application, login: String) {
     chat.set_window_position(gtk::WindowPosition::Center);
     //chat.fullscreen();
     chat.set_default_size(800, 480);
-    
+
+    /*let header_bar = gtk::HeaderBar::new();
+    chat.set_titlebar(Some(&header_bar));
+    let search_button = gtk::ToggleButton::new();
+    search_button.set_action_name(Some("system-search-symbolic"));
+    header_bar.pack_end(&search_button);
+    let search_bar = gtk::SearchBar::builder()
+        .valign(gtk::Align::Start)
+        .child(&chat)
+        .build();*/
+
     let chat_box = gtk::ListBox::new();
     let chat_place = gtk::ScrolledWindow::builder()
         .height_request(480)
@@ -189,10 +199,21 @@ fn create_chat_window(application: &Application, login: String) {
         .can_focus(false)
         .child(&chat_box)
         .build();
-    let dialog_box = gtk::ListBox::builder().valign(gtk::Align::End).build();
+    let dialog_box = gtk::Grid::builder()
+        .orientation(Orientation::Vertical)
+        .valign(gtk::Align::End)
+        .halign(gtk::Align::End)
+        .margin_start(6)
+        .margin_end(6)
+        .margin_top(6)
+        .margin_bottom(6)
+        .row_spacing(6)
+        .column_spacing(6)
+        .build();
     let dialog_place = gtk::ScrolledWindow::builder()
         .height_request(300)
         .width_request(600)
+        .hscrollbar_policy(gtk::PolicyType::Never)
         .can_focus(false)
         .child(&dialog_box)
         .build();
@@ -218,11 +239,25 @@ fn create_chat_window(application: &Application, login: String) {
     let keyboard_buttons = keyb.1;
     let keyboard_special_buttons = keyb.2;
 
+    //vert_container.add(&search_bar);
     vert_container.add(&dialog_place);
     vert_container.add(&message_input);
     vert_container.add(&keyboard_grid);
     hor_container.add(&chat_place);
     hor_container.add(&vert_container);
+
+    /*search_button
+        .bind_property("active", &search_bar, "search-mode-enabled")
+        .flags(glib::BindingFlags::SYNC_CREATE | glib::BindingFlags::BIDIRECTIONAL)
+        .build();
+    let entry = gtk::SearchEntry::new();
+    entry.set_hexpand(true);
+    search_bar.set_child(Some(&entry));
+
+    entry.connect_stop_search(glib::clone!(@weak search_button => move |_| {
+        search_button.set_active(false);
+    }));*/
+
     for (i, btn) in keyboard_buttons.into_iter() {
         if i == '<' {
             btn.connect_clicked(glib::clone!(@strong keyboard_special_buttons, @weak message_input => move |_| {
@@ -239,7 +274,7 @@ fn create_chat_window(application: &Application, login: String) {
             btn.connect_clicked(glib::clone!(@strong login, @weak dialog_box, @weak dialog_place, @weak message_input => move |_| {
                 let label = Label::builder().label(&message_input.text().to_string()).build();
                 let login_label = Label::builder().label(&login).margin_end(5).build();
-                let cont = gtk::Box::builder().orientation(Orientation::Horizontal).halign(gtk::Align::End).build();
+                let cont = gtk::Grid::builder().orientation(Orientation::Horizontal).halign(gtk::Align::End).width_request(250).build();
                 cont.add(&login_label);
                 cont.add(&label);
                 dialog_box.add(&cont);
